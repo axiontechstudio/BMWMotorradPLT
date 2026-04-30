@@ -8,6 +8,12 @@
     
     <style>
         body { margin: 0; overflow: hidden; }
+
+        /* ELIMINAR BOTÓN VR POR FUERZA (CSS) */
+        .a-enter-vr, .a-enter-ar {
+            display: none !important;
+        }
+
         #ui-overlay {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 9999; padding: 15px 30px; 
