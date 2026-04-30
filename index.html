@@ -1,58 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
     <style>
         body { margin: 0; overflow: hidden; }
-        #overlay {
-            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; padding: 10px 20px; background: white; border: none; cursor: pointer;
+        /* Botón de inicio para cumplir con políticas de autoplay de navegadores */
+        #ui-overlay {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; padding: 15px 25px; 
+            background: #222; color: white; border: none; border-radius: 8px;
+            font-family: sans-serif; font-weight: bold; cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <button id="overlay">ACTIVAR AR / SONIDO</button>
+    <button id="ui-overlay">INICIAR EXPERIENCIA</button>
 
     <a-scene 
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; maxTrack: 1" 
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1" 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights" 
         vr-mode-ui="enabled: false" 
         device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <video id="ar-video" src="./video.mp4" preload="auto" loop="true" crossOrigin="anonymous" playsinline></video>
+            <video id="ar-video" src="./video.mp4" 
+                   preload="auto" loop="true" 
+                   crossOrigin="anonymous" 
+                   playsinline webkit-playsinline>
+            </video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
-            <a-video src="#ar-video" position="0 0 0" height="0.5625" width="1" rotation="0 0 0"></a-video>
+            <a-video 
+                src="#ar-video" 
+                position="0 0 0" 
+                width="1" 
+                height="1.777" 
+                rotation="0 0 0">
+            </a-video>
         </a-entity>
     </a-scene>
 
     <script>
         const video = document.querySelector('#ar-video');
-        const button = document.querySelector('#overlay');
-        const target = document.querySelector('#target-handler');
+        const button = document.querySelector('#ui-overlay');
+        const sceneEl = document.querySelector('a-scene');
+        const targetEl = document.querySelector('#target-handler');
 
-        // Los navegadores requieren un gesto del usuario para reproducir video con audio
+        // Manejo de interacción inicial
         button.addEventListener('click', () => {
-            video.play();
-            video.pause(); // Pre-carga el video
+            // Iniciar el sistema MindAR
+            sceneEl.systems["mindar-image-system"].start();
+            
+            // "Cebar" el video para que el navegador permita el autoplay posterior
+            video.play().then(() => {
+                video.pause();
+            });
+            
             button.style.display = 'none';
         });
 
-        // Optimización de Tracking: Reproducir solo cuando se ve la imagen
-        target.addEventListener("targetFound", event => {
-            console.log("Imagen detectada");
+        // Eventos de Tracking para controlar el video
+        targetEl.addEventListener("targetFound", () => {
+            console.log("Objetivo encontrado");
             video.play();
         });
 
-        target.addEventListener("targetLost", event => {
-            console.log("Imagen perdida");
+        targetEl.addEventListener("targetLost", () => {
+            console.log("Objetivo perdido");
             video.pause();
         });
     </script>
