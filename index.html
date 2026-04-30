@@ -49,7 +49,6 @@
             transform: translate(-50%, -50%) scale(0.96);
         }
 
-        /* Pantalla de carga */
         #loading-screen {
             display: none;
             position: fixed;
@@ -86,6 +85,7 @@
             padding: 0 40px;
             line-height: 1.6;
             margin: 0;
+            text-transform: none;
         }
 
         .spinner {
@@ -101,7 +101,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Mensaje de apuntar camara */
         #aim-message {
             display: none;
             position: fixed;
@@ -117,13 +116,28 @@
             border-radius: 50px;
             text-align: center;
             white-space: nowrap;
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
             border: 1px solid rgba(255,255,255,0.2);
         }
 
         #aim-message.visible {
             display: block;
+        }
+
+        #error-msg {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            padding: 30px 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            line-height: 1.7;
         }
     </style>
 </head>
@@ -132,11 +146,16 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <p>Iniciando cámara...</p>
-        <p class="hint">Esto puede tomar unos segundos,<br>por favor espera</p>
+        <p id="loading-text">Solicitando permiso...</p>
+        <p class="hint">Acepta el permiso de cámara<br>cuando tu teléfono lo pida</p>
     </div>
 
     <div id="aim-message">📷 Apunta la cámara a la invitación</div>
+
+    <div id="error-msg">
+        ⚠️ No se pudo acceder a la cámara.<br><br>
+        Verifica que hayas dado permiso<br>e intenta recargar la página.
+    </div>
 
     <a-scene
         mindar-image="
@@ -190,37 +209,57 @@
         const sceneEl = document.querySelector('a-scene');
         const targetEl = document.querySelector('#target-handler');
         const loadingScreen = document.querySelector('#loading-screen');
+        const loadingText = document.querySelector('#loading-text');
         const aimMessage = document.querySelector('#aim-message');
+        const errorMsg = document.querySelector('#error-msg');
 
         let isTracking = false;
         let lostTimeout = null;
 
-        button.addEventListener('click', () => {
-            // Ocultar botón y mostrar pantalla de carga
-            button.style.display = 'none';
-            loadingScreen.classList.add('visible');
-
-            sceneEl.systems['mindar-image-system'].start();
-
-            video.play().then(() => {
-                video.pause();
-                video.currentTime = 0;
-            }).catch(e => console.warn('Video preload:', e));
-        });
-
-        // Cuando MindAR termina de cargar y la cámara está lista
-        sceneEl.addEventListener('arReady', () => {
+        function showAimMessage() {
             loadingScreen.classList.remove('visible');
             aimMessage.classList.add('visible');
+        }
+
+        button.addEventListener('click', async () => {
+            button.style.display = 'none';
+            loadingScreen.classList.add('visible');
+            loadingText.textContent = 'Solicitando permiso...';
+
+            // Pedir permiso de cámara explícitamente primero
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Permiso concedido — detener el stream, MindAR abrirá el suyo propio
+                stream.getTracks().forEach(t => t.stop());
+
+                loadingText.textContent = 'Iniciando cámara...';
+
+                // Ahora sí arrancar MindAR
+                sceneEl.systems['mindar-image-system'].start();
+
+                video.play().then(() => {
+                    video.pause();
+                    video.currentTime = 0;
+                }).catch(e => console.warn('Video preload:', e));
+
+            } catch (err) {
+                console.error('Permiso de cámara denegado:', err);
+                loadingScreen.classList.remove('visible');
+                errorMsg.style.display = 'block';
+                return;
+            }
         });
 
-        // Por si arReady no dispara, fallback a los 5 segundos
+        sceneEl.addEventListener('arReady', () => {
+            showAimMessage();
+        });
+
+        // Fallback más largo ahora que el permiso ya fue pedido antes
         setTimeout(() => {
             if (loadingScreen.classList.contains('visible')) {
-                loadingScreen.classList.remove('visible');
-                aimMessage.classList.add('visible');
+                showAimMessage();
             }
-        }, 5000);
+        }, 8000);
 
         targetEl.addEventListener('targetFound', () => {
             isTracking = true;
