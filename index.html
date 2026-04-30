@@ -17,17 +17,18 @@
         #ui-overlay {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 9999; padding: 15px 30px; 
-            background: #0066b1; color: white; border: none; border-radius: 50px;
+            background: #000000; color: white; border: 2px solid #ffffff; border-radius: 50px;
             font-family: Arial, sans-serif; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-transform: uppercase; letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
-    <button id="ui-overlay">VER INVITACIÓN</button>
+    <button id="ui-overlay">INICIAR EXPERIENCIA</button>
 
     <a-scene 
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1" 
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 1000; warmupTolerance: 5;" 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights" 
         vr-mode-ui="enabled: false" 
@@ -73,7 +74,12 @@
         });
 
         targetEl.addEventListener("targetLost", () => {
-            video.pause();
+            // No pausamos inmediatamente para evitar parpadeos si el missTolerance está activo
+            setTimeout(() => {
+                if (!targetEl.getAttribute('visible')) {
+                    video.pause();
+                }
+            }, 500);
         });
     </script>
 </body>
