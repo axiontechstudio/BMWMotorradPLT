@@ -22,23 +22,31 @@
 
         #ui-overlay {
             position: fixed;
-            bottom: 30px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             z-index: 9999;
-            padding: 15px 30px;
+            padding: 22px 48px;
             background: #000000;
             color: white;
             border: 2px solid #ffffff;
             border-radius: 50px;
             font-family: Arial, sans-serif;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             -webkit-user-select: none;
             user-select: none;
+            min-width: 260px;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        #ui-overlay:active {
+            transform: translate(-50%, -50%) scale(0.96);
         }
     </style>
 </head>
