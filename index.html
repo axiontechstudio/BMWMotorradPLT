@@ -59,35 +59,13 @@
         const button = document.querySelector('#ui-overlay');
         const sceneEl = document.querySelector('a-scene');
         const targetEl = document.querySelector('#target-handler');
-        
-        let audioContext;
-        let gainNode;
 
         button.addEventListener('click', () => {
-            // 1. Iniciar MindAR
             sceneEl.systems["mindar-image-system"].start();
-
-            // 2. Configurar Amplificación de Audio (Web Audio API)
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioContext.createMediaElementSource(video);
-                gainNode = audioContext.createGain();
-
-                // VALOR DE AMPLIFICACIÓN: 1.0 = 100%, 2.0 = 200%
-                gainNode.gain.value = 2.0; 
-
-                // Conectar: Video -> Ganancia -> Altavoces
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-            }
-
-            // 3. Activar el contexto de audio (requerido por navegadores)
-            audioContext.resume().then(() => {
-                video.play().then(() => {
-                    video.pause(); 
-                });
-                button.style.display = 'none';
+            video.play().then(() => {
+                video.pause(); 
             });
+            button.style.display = 'none';
         });
 
         targetEl.addEventListener("targetFound", () => {
