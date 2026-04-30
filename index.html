@@ -1,56 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <style>
-        body { margin: 0; overflow: hidden; }
-
-        /* ELIMINAR BOTÓN VR POR FUERZA (CSS) */
-        .a-enter-vr, .a-enter-ar {
-            display: none !important;
+        * { -webkit-tap-highlight-color: transparent; }
+        html, body { margin: 0; overflow: hidden; width: 100%; height: 100%; }
+        .a-enter-vr, .a-enter-ar { display: none !important; }
+        
+        /* Suavizado GPU para el canvas de AR */
+        canvas {
+            image-rendering: optimizeSpeed;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         #ui-overlay {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; padding: 15px 30px; 
-            background: #000000; color: white; border: 2px solid #ffffff; border-radius: 50px;
-            font-family: Arial, sans-serif; font-weight: bold; cursor: pointer;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            padding: 15px 30px;
+            background: #000000;
+            color: white;
+            border: 2px solid #ffffff;
+            border-radius: 50px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            text-transform: uppercase; letter-spacing: 1px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            -webkit-user-select: none;
+            user-select: none;
         }
     </style>
 </head>
 <body>
     <button id="ui-overlay">INICIAR EXPERIENCIA</button>
 
-    <a-scene 
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 1000; warmupTolerance: 5;" 
-        color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights" 
-        vr-mode-ui="enabled: false" 
-        device-orientation-permission-ui="enabled: false">
-        
-        <a-assets>
-            <video id="ar-video" src="./video.mp4" 
-                   preload="auto" loop="true" 
-                   crossOrigin="anonymous" 
-                   playsinline webkit-playsinline>
+    <a-scene
+        mindar-image="
+            imageTargetSrc: ./targets.mind;
+            autoStart: false;
+            maxTrack: 1;
+            filterMinCF: 0.001;
+            filterBeta: 0.05;
+            missTolerance: 5;
+            warmupTolerance: 3;
+        "
+        color-space="sRGB"
+        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: false; precision: mediump;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
+        loading-screen="enabled: false">
+
+        <a-assets timeout="30000">
+            <video
+                id="ar-video"
+                src="./video.mp4"
+                preload="auto"
+                loop="true"
+                muted
+                playsinline
+                webkit-playsinline
+                crossorigin="anonymous">
             </video>
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false"></a-camera>
 
-        <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
-            <a-video 
-                src="#ar-video" 
-                position="0 0 0" 
-                width="1" 
-                height="1.413" 
-                rotation="0 0 0">
+        <a-entity
+            mindar-image-target="targetIndex: 0"
+            id="target-handler"
+            smooth="true"
+            smooth-count="10">
+            <a-video
+                src="#ar-video"
+                position="0 0 0.001"
+                width="1"
+                height="1.413"
+                rotation="0 0 0"
+                material="shader: flat; side: front;">
             </a-video>
         </a-entity>
     </a-scene>
@@ -61,26 +99,45 @@
         const sceneEl = document.querySelector('a-scene');
         const targetEl = document.querySelector('#target-handler');
 
+        let isTracking = false;
+        let lostTimeout = null;
+
         button.addEventListener('click', () => {
-            sceneEl.systems["mindar-image-system"].start();
+            sceneEl.systems['mindar-image-system'].start();
+
+            // Pre-cargar video sin reproducirlo
             video.play().then(() => {
-                video.pause(); 
-            });
+                video.pause();
+                video.currentTime = 0;
+            }).catch(e => console.warn('Video preload:', e));
+
             button.style.display = 'none';
         });
 
-        targetEl.addEventListener("targetFound", () => {
-            video.play();
+        targetEl.addEventListener('targetFound', () => {
+            isTracking = true;
+
+            if (lostTimeout) {
+                clearTimeout(lostTimeout);
+                lostTimeout = null;
+            }
+
+            video.play().catch(e => console.warn('Video play:', e));
         });
 
-        targetEl.addEventListener("targetLost", () => {
-            // No pausamos inmediatamente para evitar parpadeos si el missTolerance está activo
-            setTimeout(() => {
-                if (!targetEl.getAttribute('visible')) {
+        targetEl.addEventListener('targetLost', () => {
+            isTracking = false;
+
+            // Espera antes de pausar para evitar parpadeos por pérdidas momentáneas
+            lostTimeout = setTimeout(() => {
+                if (!isTracking) {
                     video.pause();
                 }
-            }, 500);
+            }, 800);
         });
+
+        // Prevenir scroll accidental en móvil
+        document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     </script>
 </body>
 </html>
