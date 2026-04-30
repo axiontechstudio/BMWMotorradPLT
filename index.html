@@ -12,7 +12,6 @@
         html, body { margin: 0; overflow: hidden; width: 100%; height: 100%; }
         .a-enter-vr, .a-enter-ar { display: none !important; }
         
-        /* Suavizado GPU para el canvas de AR */
         canvas {
             image-rendering: optimizeSpeed;
             -webkit-backface-visibility: hidden;
@@ -44,7 +43,7 @@
     </style>
 </head>
 <body>
-    <button id="ui-overlay">INICIAR EXPERIENCIA</button>
+    <button id="ui-overlay">Ver Invitación</button>
 
     <a-scene
         mindar-image="
@@ -68,7 +67,6 @@
                 src="./video.mp4"
                 preload="auto"
                 loop="true"
-                muted
                 playsinline
                 webkit-playsinline
                 crossorigin="anonymous">
@@ -105,7 +103,6 @@
         button.addEventListener('click', () => {
             sceneEl.systems['mindar-image-system'].start();
 
-            // Pre-cargar video sin reproducirlo
             video.play().then(() => {
                 video.pause();
                 video.currentTime = 0;
@@ -128,7 +125,6 @@
         targetEl.addEventListener('targetLost', () => {
             isTracking = false;
 
-            // Espera antes de pausar para evitar parpadeos por pérdidas momentáneas
             lostTimeout = setTimeout(() => {
                 if (!isTracking) {
                     video.pause();
@@ -136,7 +132,6 @@
             }, 800);
         });
 
-        // Prevenir scroll accidental en móvil
         document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     </script>
 </body>
