@@ -8,17 +8,17 @@
     
     <style>
         body { margin: 0; overflow: hidden; }
-        /* Botón de inicio para cumplir con políticas de autoplay de navegadores */
         #ui-overlay {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; padding: 15px 25px; 
-            background: #222; color: white; border: none; border-radius: 8px;
-            font-family: sans-serif; font-weight: bold; cursor: pointer;
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; padding: 15px 30px; 
+            background: #0066b1; color: white; border: none; border-radius: 50px;
+            font-family: Arial, sans-serif; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
-    <button id="ui-overlay">INICIAR EXPERIENCIA</button>
+    <button id="ui-overlay">VER INVITACIÓN</button>
 
     <a-scene 
         mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1" 
@@ -42,7 +42,7 @@
                 src="#ar-video" 
                 position="0 0 0" 
                 width="1" 
-                height="1.777" 
+                height="1.413" 
                 rotation="0 0 0">
             </a-video>
         </a-entity>
@@ -54,27 +54,19 @@
         const sceneEl = document.querySelector('a-scene');
         const targetEl = document.querySelector('#target-handler');
 
-        // Manejo de interacción inicial
         button.addEventListener('click', () => {
-            // Iniciar el sistema MindAR
             sceneEl.systems["mindar-image-system"].start();
-            
-            // "Cebar" el video para que el navegador permita el autoplay posterior
             video.play().then(() => {
-                video.pause();
+                video.pause(); 
             });
-            
             button.style.display = 'none';
         });
 
-        // Eventos de Tracking para controlar el video
         targetEl.addEventListener("targetFound", () => {
-            console.log("Objetivo encontrado");
             video.play();
         });
 
         targetEl.addEventListener("targetLost", () => {
-            console.log("Objetivo perdido");
             video.pause();
         });
     </script>
