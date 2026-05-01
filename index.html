@@ -9,7 +9,7 @@
     
     <style>
         * { -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; overflow: hidden; width: 100%; height: 100%; background: #000; }
+        html, body { margin: 0; overflow: hidden; width: 100%; height: 100%; }
         .a-enter-vr, .a-enter-ar { display: none !important; }
         
         canvas {
@@ -62,7 +62,9 @@
             gap: 32px;
         }
 
-        #loading-screen.visible { display: flex; }
+        #loading-screen.visible {
+            display: flex;
+        }
 
         #loading-screen p {
             color: white;
@@ -95,7 +97,9 @@
             animation: spin 0.9s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
         #aim-message {
             display: none;
@@ -115,187 +119,26 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
-        #aim-message.visible { display: block; }
+        #aim-message.visible {
+            display: block;
+        }
 
-        #error-screen {
+        #error-msg {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
             background: #000;
-            z-index: 99999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 30px;
-            box-sizing: border-box;
-            gap: 20px;
-        }
-
-        #error-screen.visible { display: flex; }
-
-        #error-screen .icon { font-size: 48px; }
-
-        #error-screen h2 {
             color: white;
-            font-family: Arial, sans-serif;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            margin: 0;
-        }
-
-        #error-screen p {
-            color: rgba(255,255,255,0.6);
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            text-align: center;
-            line-height: 1.7;
-            margin: 0;
-            padding: 0 10px;
-        }
-
-        #error-screen .steps {
-            background: rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 20px 24px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #error-screen .step {
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        #error-screen .step:last-child { margin-bottom: 0; }
-
-        #error-screen .step-num {
-            background: white;
-            color: black;
-            font-weight: bold;
-            font-size: 12px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        #retry-btn {
-            background: white;
-            color: black;
-            border: none;
-            border-radius: 50px;
-            padding: 16px 36px;
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            touch-action: manipulation;
-            margin-top: 8px;
-        }
-
-        #retry-btn:active { opacity: 0.8; }
-
-        #browser-warning {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 99999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 30px;
-            box-sizing: border-box;
-            gap: 24px;
-        }
-
-        #browser-warning.visible { display: flex; }
-
-        #browser-warning .icon { font-size: 52px; line-height: 1; }
-
-        #browser-warning h2 {
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            margin: 0;
-        }
-
-        #browser-warning p {
-            color: rgba(255,255,255,0.65);
             font-family: Arial, sans-serif;
             font-size: 15px;
+            padding: 30px 40px;
+            border-radius: 20px;
             text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
             line-height: 1.7;
-            margin: 0;
         }
-
-        #browser-warning .steps {
-            background: rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 20px 24px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #browser-warning .step {
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        #browser-warning .step:last-child { margin-bottom: 0; }
-
-        #browser-warning .step-num {
-            background: white;
-            color: black;
-            font-weight: bold;
-            font-size: 12px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        #copy-btn {
-            background: white;
-            color: black;
-            border: none;
-            border-radius: 50px;
-            padding: 16px 36px;
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            touch-action: manipulation;
-        }
-
-        #copy-btn:active { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -303,41 +146,15 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <p id="loading-text">Iniciando cámara...</p>
+        <p id="loading-text">Solicitando permiso...</p>
         <p class="hint">Acepta el permiso de cámara<br>cuando tu teléfono lo pida</p>
     </div>
 
     <div id="aim-message">📷 Apunta la cámara a la invitación</div>
 
-    <!-- Error: permiso denegado -->
-    <div id="error-screen">
-        <div class="icon">📵</div>
-        <h2>Permiso de cámara denegado</h2>
-        <p>Para continuar necesitas permitir el acceso a la cámara en tu teléfono.</p>
-        <div class="steps" id="error-steps"></div>
-        <button id="retry-btn">Reintentar</button>
-    </div>
-
-    <!-- Aviso navegador restringido -->
-    <div id="browser-warning">
-        <div class="icon">🌐</div>
-        <h2>Abre esto en Safari</h2>
-        <p>Para que la experiencia funcione necesitas abrirla directamente en Safari, no desde la app de Cámara u otra app.</p>
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">1</div>
-                <span>Toca el botón de abajo para copiar el enlace</span>
-            </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <span>Abre <strong>Safari</strong> en tu iPhone</span>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <span>Pega el enlace en la barra de direcciones y ábrelo</span>
-            </div>
-        </div>
-        <button id="copy-btn">Copiar enlace</button>
+    <div id="error-msg">
+        ⚠️ No se pudo acceder a la cámara.<br><br>
+        Verifica que hayas dado permiso<br>e intenta recargar la página.
     </div>
 
     <a-scene
@@ -394,109 +211,55 @@
         const loadingScreen = document.querySelector('#loading-screen');
         const loadingText = document.querySelector('#loading-text');
         const aimMessage = document.querySelector('#aim-message');
-        const errorScreen = document.querySelector('#error-screen');
-        const errorSteps = document.querySelector('#error-steps');
-        const retryBtn = document.querySelector('#retry-btn');
-        const browserWarning = document.querySelector('#browser-warning');
-        const copyBtn = document.querySelector('#copy-btn');
+        const errorMsg = document.querySelector('#error-msg');
 
         let isTracking = false;
         let lostTimeout = null;
-        let arStarted = false;
-
-        // Detectar navegador in-app restringido
-        function isRestrictedBrowser() {
-            const ua = navigator.userAgent;
-            const isInApp = /Instagram|FBAN|FBAV|Twitter|Line|MicroMessenger/.test(ua);
-            const noCamera = !window.navigator.mediaDevices || !window.navigator.mediaDevices.getUserMedia;
-            return isInApp || noCamera;
-        }
-
-        // Detectar iOS o Android para mostrar instrucciones correctas
-        function isIOS() {
-            return /iPad|iPhone|iPod/.test(navigator.userAgent);
-        }
-
-        function showErrorScreen() {
-            loadingScreen.classList.remove('visible');
-            errorSteps.innerHTML = isIOS() ? `
-                <div class="step"><div class="step-num">1</div><span>Abre <strong>Configuración</strong> de tu iPhone</span></div>
-                <div class="step"><div class="step-num">2</div><span>Busca <strong>Safari</strong> y entra</span></div>
-                <div class="step"><div class="step-num">3</div><span>Toca <strong>Cámara</strong> y selecciona <strong>Permitir</strong></span></div>
-                <div class="step"><div class="step-num">4</div><span>Vuelve aquí y toca <strong>Reintentar</strong></span></div>
-            ` : `
-                <div class="step"><div class="step-num">1</div><span>Toca los <strong>3 puntos</strong> arriba a la derecha en Chrome</span></div>
-                <div class="step"><div class="step-num">2</div><span>Ve a <strong>Configuración del sitio → Cámara</strong></span></div>
-                <div class="step"><div class="step-num">3</div><span>Cambia a <strong>Permitir</strong></span></div>
-                <div class="step"><div class="step-num">4</div><span>Vuelve aquí y toca <strong>Reintentar</strong></span></div>
-            `;
-            errorScreen.classList.add('visible');
-        }
 
         function showAimMessage() {
             loadingScreen.classList.remove('visible');
             aimMessage.classList.add('visible');
         }
 
-        if (isRestrictedBrowser()) {
+        button.addEventListener('click', async () => {
             button.style.display = 'none';
-            browserWarning.classList.add('visible');
-        }
+            loadingScreen.classList.add('visible');
+            loadingText.textContent = 'Solicitando permiso...';
 
-        copyBtn.addEventListener('click', () => {
-            const url = window.location.href;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                    copyBtn.textContent = '✓ Enlace copiado';
-                    setTimeout(() => { copyBtn.textContent = 'Copiar enlace'; }, 2500);
-                });
-            } else {
-                const input = document.createElement('input');
-                input.value = url;
-                document.body.appendChild(input);
-                input.select();
-                document.execCommand('copy');
-                document.body.removeChild(input);
-                copyBtn.textContent = '✓ Enlace copiado';
-                setTimeout(() => { copyBtn.textContent = 'Copiar enlace'; }, 2500);
+            // Pedir permiso de cámara explícitamente primero
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Permiso concedido — detener el stream, MindAR abrirá el suyo propio
+                stream.getTracks().forEach(t => t.stop());
+
+                loadingText.textContent = 'Iniciando cámara...';
+
+                // Ahora sí arrancar MindAR
+                sceneEl.systems['mindar-image-system'].start();
+
+                video.play().then(() => {
+                    video.pause();
+                    video.currentTime = 0;
+                }).catch(e => console.warn('Video preload:', e));
+
+            } catch (err) {
+                console.error('Permiso de cámara denegado:', err);
+                loadingScreen.classList.remove('visible');
+                errorMsg.style.display = 'block';
+                return;
             }
         });
 
-        function startAR() {
-            arStarted = true;
-            button.style.display = 'none';
-            errorScreen.classList.remove('visible');
-            loadingScreen.classList.add('visible');
-            loadingText.textContent = 'Iniciando cámara...';
-
-            // Dejar que MindAR maneje el permiso directamente
-            sceneEl.systems['mindar-image-system'].start();
-
-            video.play().then(() => {
-                video.pause();
-                video.currentTime = 0;
-            }).catch(e => console.warn('Video preload:', e));
-        }
-
-        button.addEventListener('click', startAR);
-        retryBtn.addEventListener('click', startAR);
-
-        // MindAR listo — cámara abierta y funcionando
         sceneEl.addEventListener('arReady', () => {
             showAimMessage();
         });
 
-        // MindAR falló — casi siempre es permiso denegado
-        sceneEl.addEventListener('arError', () => {
-            showErrorScreen();
-        });
-
-        // Fallback por si ningún evento dispara
+        // Fallback más largo ahora que el permiso ya fue pedido antes
         setTimeout(() => {
             if (loadingScreen.classList.contains('visible')) {
                 showAimMessage();
             }
-        }, 10000);
+        }, 8000);
 
         targetEl.addEventListener('targetFound', () => {
             isTracking = true;
