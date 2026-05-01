@@ -162,13 +162,13 @@
             imageTargetSrc: ./targets.mind;
             autoStart: false;
             maxTrack: 1;
-            filterMinCF: 0.001;
-            filterBeta: 0.05;
-            missTolerance: 5;
+            filterMinCF: 0.0001; 
+            filterBeta: 0.001;
+            missTolerance: 2;
             warmupTolerance: 3;
         "
         color-space="sRGB"
-        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: false; precision: mediump;"
+        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: false; precision: highp;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         loading-screen="enabled: false">
@@ -189,9 +189,7 @@
 
         <a-entity
             mindar-image-target="targetIndex: 0"
-            id="target-handler"
-            smooth="true"
-            smooth-count="10">
+            id="target-handler">
             <a-video
                 src="#ar-video"
                 position="0 0 0.001"
