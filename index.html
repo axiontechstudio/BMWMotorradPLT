@@ -221,45 +221,31 @@
             aimMessage.classList.add('visible');
         }
 
-        button.addEventListener('click', async () => {
+        button.addEventListener('click', () => {
             button.style.display = 'none';
             loadingScreen.classList.add('visible');
-            loadingText.textContent = 'Solicitando permiso...';
+            loadingText.textContent = 'Iniciando cámara...';
 
-            // Pedir permiso de cámara explícitamente primero
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                // Permiso concedido — detener el stream, MindAR abrirá el suyo propio
-                stream.getTracks().forEach(t => t.stop());
+            // Preload del video
+            video.play().then(() => {
+                video.pause();
+                video.currentTime = 0;
+            }).catch(e => console.warn('Video preload:', e));
 
-                loadingText.textContent = 'Iniciando cámara...';
+            // Iniciar MindAR directamente
+            sceneEl.systems['mindar-image-system'].start();
+        });
 
-                // Ahora sí arrancar MindAR
-                sceneEl.systems['mindar-image-system'].start();
-
-                video.play().then(() => {
-                    video.pause();
-                    video.currentTime = 0;
-                }).catch(e => console.warn('Video preload:', e));
-
-            } catch (err) {
-                console.error('Permiso de cámara denegado:', err);
-                loadingScreen.classList.remove('visible');
-                errorMsg.style.display = 'block';
-                return;
-            }
+        // Capturar si MindAR falla al acceder a la cámara
+        sceneEl.addEventListener('arError', (event) => {
+            console.error('Error de cámara de MindAR:', event);
+            loadingScreen.classList.remove('visible');
+            errorMsg.style.display = 'block';
         });
 
         sceneEl.addEventListener('arReady', () => {
             showAimMessage();
         });
-
-        // Fallback más largo ahora que el permiso ya fue pedido antes
-        setTimeout(() => {
-            if (loadingScreen.classList.contains('visible')) {
-                showAimMessage();
-            }
-        }, 8000);
 
         targetEl.addEventListener('targetFound', () => {
             isTracking = true;
@@ -269,7 +255,6 @@
                 clearTimeout(lostTimeout);
                 lostTimeout = null;
             }
-
             video.play().catch(e => console.warn('Video play:', e));
         });
 
