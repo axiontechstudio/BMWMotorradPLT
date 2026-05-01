@@ -226,19 +226,25 @@
             loadingScreen.classList.add('visible');
             loadingText.textContent = 'Iniciando cámara...';
 
-            // Preload del video
-            video.play().then(() => {
-                video.pause();
-                video.currentTime = 0;
-            }).catch(e => console.warn('Video preload:', e));
+            // 1. Desbloqueo síncrono para iOS (Sin promesas)
+            video.play();
+            video.pause();
+            video.currentTime = 0;
 
-            // Iniciar MindAR directamente
-            sceneEl.systems['mindar-image-system'].start();
+            // 2. Separar la activación de la cámara del hilo actual
+            setTimeout(() => {
+                try {
+                    sceneEl.systems['mindar-image-system'].start();
+                } catch (e) {
+                    console.error('Error al ejecutar MindAR:', e);
+                    loadingScreen.classList.remove('visible');
+                    errorMsg.style.display = 'block';
+                }
+            }, 300);
         });
 
-        // Capturar si MindAR falla al acceder a la cámara
         sceneEl.addEventListener('arError', (event) => {
-            console.error('Error de cámara de MindAR:', event);
+            console.error('Error de cámara:', event);
             loadingScreen.classList.remove('visible');
             errorMsg.style.display = 'block';
         });
@@ -255,7 +261,13 @@
                 clearTimeout(lostTimeout);
                 lostTimeout = null;
             }
-            video.play().catch(e => console.warn('Video play:', e));
+            
+            // En iOS, verificar el estado de carga del video antes de forzar play
+            if (video.readyState >= 2) {
+                video.play().catch(e => console.warn('Error reproduciendo video:', e));
+            } else {
+                video.addEventListener('canplay', () => video.play(), { once: true });
+            }
         });
 
         targetEl.addEventListener('targetLost', () => {
@@ -269,6 +281,7 @@
             }, 800);
         });
 
+        // Evitar scroll accidental
         document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     </script>
 </body>
