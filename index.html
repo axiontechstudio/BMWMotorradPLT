@@ -224,25 +224,45 @@
             loadingScreen.classList.add('visible');
             loadingText.textContent = 'Iniciando cámara...';
 
-            // 1. Desbloqueo síncrono para iOS (Sin promesas)
-            video.play();
-            video.pause();
-            video.currentTime = 0;
+            // 1. Desbloqueo síncrono para iOS seguro
+            let playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    video.pause();
+                    video.currentTime = 0;
+                }).catch(e => {
+                    console.warn('Auto-play bloqueado temporalmente, se forzará al detectar objetivo.', e);
+                });
+            }
 
-            // 2. Separar la activación de la cámara del hilo actual
-            setTimeout(() => {
+            // 2. Función asíncrona robusta para arrancar MindAR
+            const startMindAR = async () => {
                 try {
-                    sceneEl.systems['mindar-image-system'].start();
+                    // MindAR start() devuelve una promesa en sus versiones recientes
+                    await sceneEl.systems['mindar-image-system'].start();
                 } catch (e) {
-                    console.error('Error al ejecutar MindAR:', e);
+                    console.error('Error Crítico al iniciar MindAR:', e);
                     loadingScreen.classList.remove('visible');
+                    // Agregamos un botón de reinicio en lugar de pedirle al usuario que refresque el navegador
+                    errorMsg.innerHTML = '⚠️ Error al acceder a la cámara.<br><br>Verifica los permisos.<br><button id="btn-retry" style="margin-top: 15px; padding: 10px 20px; font-weight: bold; border-radius: 20px; background: white; color: black; border: none; cursor: pointer;">Reintentar</button>';
                     errorMsg.style.display = 'block';
+                    
+                    document.getElementById('btn-retry').addEventListener('click', () => {
+                        window.location.reload();
+                    });
                 }
-            }, 300);
+            };
+
+            // 3. Ejecutar SOLO cuando el motor A-Frame esté listo
+            if (sceneEl.hasLoaded) {
+                startMindAR();
+            } else {
+                sceneEl.addEventListener('loaded', startMindAR);
+            }
         });
 
         sceneEl.addEventListener('arError', (event) => {
-            console.error('Error de cámara:', event);
+            console.error('Error de motor AR:', event);
             loadingScreen.classList.remove('visible');
             errorMsg.style.display = 'block';
         });
@@ -260,7 +280,7 @@
                 lostTimeout = null;
             }
             
-            // En iOS, verificar el estado de carga del video antes de forzar play
+            // Forzar play seguro en iOS
             if (video.readyState >= 2) {
                 video.play().catch(e => console.warn('Error reproduciendo video:', e));
             } else {
@@ -279,7 +299,6 @@
             }, 800);
         });
 
-        // Evitar scroll accidental
         document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     </script>
 </body>
